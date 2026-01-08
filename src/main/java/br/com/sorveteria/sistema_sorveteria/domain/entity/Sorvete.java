@@ -1,6 +1,8 @@
 package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -57,4 +59,7 @@ public class Sorvete {
     public void setSabores(List<Sabor> sabores) {
         this.sabores = sabores;
     }
-}
+
+
+
+    }

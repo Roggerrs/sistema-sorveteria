@@ -6,6 +6,7 @@ import br.com.sorveteria.sistema_sorveteria.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,6 +48,8 @@ public class PedidoService {
 
         pedido = pedidoRepository.save(pedido);
 
+        BigDecimal totalPedido = BigDecimal.ZERO;
+
         for (SorveteRequestDTO s : dto.getSorvetes()) {
 
             Tamanho tamanho = tamanhoRepository.findById(s.getTamanhoId())
@@ -58,13 +61,29 @@ public class PedidoService {
                 throw new RuntimeException("Sabores inválidos");
             }
 
+            BigDecimal totalSorvete = tamanho.getPrecoBase();
+
+            for (Sabor sabor : sabores) {
+                totalSorvete = totalSorvete.add(
+                        sabor.getPrecoAdicional() != null
+                                ? sabor.getPrecoAdicional()
+                                : BigDecimal.ZERO
+                );
+            }
+
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
             sorvete.setSabores(sabores);
 
             sorveteRepository.save(sorvete);
+
+            totalPedido = totalPedido.add(totalSorvete);
         }
+
+        // opcional: salvar total no pedido
+        // pedido.setTotal(totalPedido);
+        // pedidoRepository.save(pedido);
 
         return new PedidoResponseDTO(
                 pedido.getId(),
@@ -112,7 +131,6 @@ public class PedidoService {
                 }).toList();
 
         dto.setSorvetes(sorvetesDTO);
-
         return dto;
     }
 }
