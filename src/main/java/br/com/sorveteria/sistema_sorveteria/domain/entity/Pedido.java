@@ -18,7 +18,7 @@ public class Pedido {
     private LocalDateTime dataPedido;
 
 @ManyToOne
-    @JoinColumn(name = "ATENDENTE_ID_CLIENTE", nullable = false)
+    @JoinColumn(name = "ATENDENTE_ID_ATENDENTE", nullable = false)
     private Atendente atendente;
 
     public Long getId() {
@@ -33,11 +33,11 @@ public class Pedido {
         this.dataPedido = dataPedido;
     }
 
-    public Atendente getCliente() {
+    public Atendente getAtendente() {
         return atendente;
     }
 
-    public void setCliente(Atendente atendente) {
+    public void setAtendente(Atendente atendente) {
         this.atendente = atendente;
     }
 

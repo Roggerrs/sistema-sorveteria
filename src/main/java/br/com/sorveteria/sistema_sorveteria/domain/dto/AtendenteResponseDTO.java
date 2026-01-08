@@ -1,4 +1,4 @@
 package br.com.sorveteria.sistema_sorveteria.domain.dto;
 
-public class ClienteResponseDTO {
+public class AtendenteResponseDTO {
 }

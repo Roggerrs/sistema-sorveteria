@@ -1,7 +1,9 @@
 package br.com.sorveteria.sistema_sorveteria.controller;
 
-import br.com.sorveteria.sistema_sorveteria.domain.entity.Pedido;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoRequestDTO;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.service.PedidoService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,9 +18,13 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
+    @PostMapping
+    public PedidoResponseDTO criar(@Valid @RequestBody PedidoRequestDTO dto) {
+        return pedidoService.criarPedido(dto);
+    }
+
     @GetMapping
-    public List<Pedido> listar() {
+    public List<PedidoResponseDTO> listar() {
         return pedidoService.listarTodos();
     }
 }
-
