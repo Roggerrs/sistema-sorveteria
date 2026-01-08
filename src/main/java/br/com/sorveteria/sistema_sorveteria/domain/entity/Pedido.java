@@ -2,7 +2,6 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,9 +17,9 @@ public class Pedido {
 @Column(name = "DATA_PEDIDO", nullable = false)
     private LocalDateTime dataPedido;
 
-@ManyToOne(optional = false)
-    @JoinColumn(name = "CLIENTE_ID_CLIENTE", nullable = false)
-    private Cliente cliente;
+@ManyToOne
+    @JoinColumn(name = "ATENDENTE_ID_CLIENTE", nullable = false)
+    private Atendente atendente;
 
     public Long getId() {
         return id;
@@ -34,12 +33,12 @@ public class Pedido {
         this.dataPedido = dataPedido;
     }
 
-    public Cliente getCliente() {
-        return cliente;
+    public Atendente getCliente() {
+        return atendente;
     }
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
+    public void setCliente(Atendente atendente) {
+        this.atendente = atendente;
     }
 
 }

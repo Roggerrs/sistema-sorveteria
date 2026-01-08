@@ -1,10 +1,8 @@
 package br.com.sorveteria.sistema_sorveteria.controller;
 
-import br.com.sorveteria.sistema_sorveteria.Jparepository.PedidoRepository;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.Pedido;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import br.com.sorveteria.sistema_sorveteria.service.PedidoService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -12,18 +10,15 @@ import java.util.List;
 @RequestMapping("/pedidos")
 public class PedidoController {
 
-private final PedidoRepository pedidoRepository;
+    private final PedidoService pedidoService;
 
-public PedidoController(PedidoRepository pedidoRepository) {
-    this.pedidoRepository = pedidoRepository;
-}
-
-//GET /PEDIDOS
-    @GetMapping
-    public List<Pedido> listar() {
-    return pedidoRepository.findAll();
-
+    public PedidoController(PedidoService pedidoService) {
+        this.pedidoService = pedidoService;
     }
 
+    @GetMapping
+    public List<Pedido> listar() {
+        return pedidoService.listarTodos();
+    }
 }
 

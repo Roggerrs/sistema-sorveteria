@@ -1,4 +1,4 @@
-package br.com.sorveteria.sistema_sorveteria.Jparepository;
+package br.com.sorveteria.sistema_sorveteria.repository;
 
 import br.com.sorveteria.sistema_sorveteria.domain.entity.Sorvete;
 import org.springframework.data.jpa.repository.JpaRepository;

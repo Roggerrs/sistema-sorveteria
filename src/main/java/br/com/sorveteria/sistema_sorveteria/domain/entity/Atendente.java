@@ -3,13 +3,13 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "CLIENTE")
+@Table(name = "ATENDENTE")
 
-public class Cliente {
+public class Atendente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_CLIENTE")
+    @Column(name = "ID_ATENDENTE")
     private Long id;
 
     @Column(name = "NOME", nullable = false)
