@@ -1,5 +1,6 @@
 package br.com.sorveteria.sistema_sorveteria.controller;
 
+import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoDetalheResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoRequestDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.service.PedidoService;
@@ -27,4 +28,10 @@ public class PedidoController {
     public List<PedidoResponseDTO> listar() {
         return pedidoService.listarTodos();
     }
+    @GetMapping("/{id}")
+    public PedidoDetalheResponseDTO buscarPorId(@PathVariable Long id) {
+        return pedidoService.buscarPorId(id);
+    }
+
+
 }

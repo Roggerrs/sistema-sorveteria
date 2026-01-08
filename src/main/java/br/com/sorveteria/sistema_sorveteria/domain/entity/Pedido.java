@@ -1,25 +1,28 @@
 package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "PEDIDO")
-
 public class Pedido {
 
-@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_PEDIDO")
     private Long id;
 
-@Column(name = "DATA_PEDIDO", nullable = false)
+    @Column(name = "DATA_PEDIDO", nullable = false)
     private LocalDateTime dataPedido;
 
-@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "ATENDENTE_ID_ATENDENTE", nullable = false)
     private Atendente atendente;
+
+    // 🔴 ISSO FALTAVA
+    @OneToMany(mappedBy = "pedido")
+    private List<Sorvete> sorvetes;
 
     public Long getId() {
         return id;
@@ -41,4 +44,8 @@ public class Pedido {
         this.atendente = atendente;
     }
 
+    // 🔴 GETTER OBRIGATÓRIO
+    public List<Sorvete> getSorvetes() {
+        return sorvetes;
+    }
 }

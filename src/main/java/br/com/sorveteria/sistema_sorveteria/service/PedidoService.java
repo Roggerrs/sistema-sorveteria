@@ -1,8 +1,6 @@
 package br.com.sorveteria.sistema_sorveteria.service;
 
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoRequestDTO;
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoResponseDTO;
-import br.com.sorveteria.sistema_sorveteria.domain.dto.SorveteRequestDTO;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.*;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.*;
 import br.com.sorveteria.sistema_sorveteria.repository.*;
 import jakarta.transaction.Transactional;
@@ -10,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PedidoService {
@@ -35,6 +32,9 @@ public class PedidoService {
         this.sorveteRepository = sorveteRepository;
     }
 
+    // =========================
+    // POST /pedidos
+    // =========================
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
 
@@ -54,6 +54,10 @@ public class PedidoService {
 
             List<Sabor> sabores = saborRepository.findAllById(s.getSaboresIds());
 
+            if (sabores.isEmpty()) {
+                throw new RuntimeException("Sabores inválidos");
+            }
+
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
@@ -68,6 +72,9 @@ public class PedidoService {
         );
     }
 
+    // =========================
+    // GET /pedidos
+    // =========================
     public List<PedidoResponseDTO> listarTodos() {
         return pedidoRepository.findAll()
                 .stream()
@@ -75,6 +82,37 @@ public class PedidoService {
                         p.getId(),
                         p.getAtendente().getNome()
                 ))
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    // =========================
+    // GET /pedidos/{id}
+    // =========================
+    public PedidoDetalheResponseDTO buscarPorId(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+
+        PedidoDetalheResponseDTO dto = new PedidoDetalheResponseDTO();
+        dto.setId(pedido.getId());
+        dto.setAtendente(pedido.getAtendente().getNome());
+        dto.setDataPedido(pedido.getDataPedido());
+
+        List<SorveteDetalheDTO> sorvetesDTO =
+                pedido.getSorvetes().stream().map(s -> {
+                    SorveteDetalheDTO sd = new SorveteDetalheDTO();
+                    sd.setTamanho(s.getTamanho().getDescricao());
+                    sd.setSabores(
+                            s.getSabores()
+                                    .stream()
+                                    .map(Sabor::getNome)
+                                    .toList()
+                    );
+                    return sd;
+                }).toList();
+
+        dto.setSorvetes(sorvetesDTO);
+
+        return dto;
     }
 }
