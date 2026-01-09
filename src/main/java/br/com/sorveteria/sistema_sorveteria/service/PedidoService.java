@@ -48,8 +48,6 @@ public class PedidoService {
 
         pedido = pedidoRepository.save(pedido);
 
-        BigDecimal totalPedido = BigDecimal.ZERO;
-
         for (SorveteRequestDTO s : dto.getSorvetes()) {
 
             Tamanho tamanho = tamanhoRepository.findById(s.getTamanhoId())
@@ -61,29 +59,13 @@ public class PedidoService {
                 throw new RuntimeException("Sabores inválidos");
             }
 
-            BigDecimal totalSorvete = tamanho.getPrecoBase();
-
-            for (Sabor sabor : sabores) {
-                totalSorvete = totalSorvete.add(
-                        sabor.getPrecoAdicional() != null
-                                ? sabor.getPrecoAdicional()
-                                : BigDecimal.ZERO
-                );
-            }
-
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
             sorvete.setSabores(sabores);
 
             sorveteRepository.save(sorvete);
-
-            totalPedido = totalPedido.add(totalSorvete);
         }
-
-        // opcional: salvar total no pedido
-        // pedido.setTotal(totalPedido);
-        // pedidoRepository.save(pedido);
 
         return new PedidoResponseDTO(
                 pedido.getId(),
@@ -119,18 +101,31 @@ public class PedidoService {
 
         List<SorveteDetalheDTO> sorvetesDTO =
                 pedido.getSorvetes().stream().map(s -> {
+
+                    BigDecimal precoBase = s.getTamanho().getPrecoBase();
+
+                    BigDecimal precoSabores = s.getSabores().stream()
+                            .map(sb -> sb.getPrecoAdicional() != null
+                                    ? sb.getPrecoAdicional()
+                                    : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
                     SorveteDetalheDTO sd = new SorveteDetalheDTO();
                     sd.setTamanho(s.getTamanho().getDescricao());
+                    sd.setPrecoBase(precoBase);
                     sd.setSabores(
-                            s.getSabores()
-                                    .stream()
+                            s.getSabores().stream()
                                     .map(Sabor::getNome)
                                     .toList()
                     );
+                    sd.setPrecoSabores(precoSabores);
+                    sd.setPrecoTotal(precoBase.add(precoSabores));
+
                     return sd;
                 }).toList();
 
         dto.setSorvetes(sorvetesDTO);
+
         return dto;
     }
 }
