@@ -1,8 +1,8 @@
 package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -14,8 +14,10 @@ public class Sorvete {
     @Column(name = "ID_SORVETE")
     private Long id;
 
+    // 🔴 EVITA LOOP DE SERIALIZAÇÃO (Swagger / JSON)
     @ManyToOne
     @JoinColumn(name = "PEDIDO_ID_PEDIDO", nullable = false)
+    @JsonIgnore
     private Pedido pedido;
 
     @ManyToOne
@@ -33,6 +35,9 @@ public class Sorvete {
     @Column(name = "ATIVO")
     private Boolean ativo = true;
 
+    // ======================
+    // GETTERS E SETTERS
+    // ======================
 
     public Long getId() {
         return id;
@@ -46,7 +51,6 @@ public class Sorvete {
         this.pedido = pedido;
     }
 
-    // 🔴 GETTER OBRIGATÓRIO
     public Tamanho getTamanho() {
         return tamanho;
     }
@@ -55,7 +59,6 @@ public class Sorvete {
         this.tamanho = tamanho;
     }
 
-    // 🔴 GETTER OBRIGATÓRIO
     public List<Sabor> getSabores() {
         return sabores;
     }
@@ -71,7 +74,4 @@ public class Sorvete {
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
     }
-
-
-
 }

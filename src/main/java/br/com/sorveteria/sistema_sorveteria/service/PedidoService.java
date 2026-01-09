@@ -2,6 +2,8 @@ package br.com.sorveteria.sistema_sorveteria.service;
 
 import br.com.sorveteria.sistema_sorveteria.domain.dto.*;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.*;
+import br.com.sorveteria.sistema_sorveteria.exception.BusinessException;
+import br.com.sorveteria.sistema_sorveteria.exception.ResourceNotFoundException;
 import br.com.sorveteria.sistema_sorveteria.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ public class PedidoService {
         this.sorveteRepository = sorveteRepository;
     }
 
+
+
     @Transactional
     public void inativarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
@@ -51,7 +55,8 @@ public class PedidoService {
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
 
         Atendente atendente = atendenteRepository.findById(dto.getAtendenteId())
-                .orElseThrow(() -> new RuntimeException("Atendente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Atendente não encontrado"));
+
 
         Pedido pedido = new Pedido();
         pedido.setAtendente(atendente);
@@ -62,12 +67,26 @@ public class PedidoService {
         for (SorveteRequestDTO s : dto.getSorvetes()) {
 
             Tamanho tamanho = tamanhoRepository.findById(s.getTamanhoId())
-                    .orElseThrow(() -> new RuntimeException("Tamanho inválido"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Tamanho inválido"));
+
 
             List<Sabor> sabores = saborRepository.findAllById(s.getSaboresIds());
 
+            int qtdSabores = sabores.size();
+
+            if (tamanho.getDescricao().equalsIgnoreCase("PEQUENO") && qtdSabores > 2) {
+                throw new BusinessException("Sorvete pequeno permite no máximo 2 sabores");
+            }
+
+            if (tamanho.getDescricao().equalsIgnoreCase("GRANDE") && qtdSabores > 3) {
+                throw new BusinessException("Sorvete grande permite no máximo 3 sabores");
+            }
+
+
+
             if (sabores.isEmpty()) {
-                throw new RuntimeException("Sabores inválidos");
+                throw new BusinessException("Sabores inválidos");
+
             }
 
             Sorvete sorvete = new Sorvete();
@@ -96,6 +115,8 @@ public class PedidoService {
                 ))
                 .toList();
     }
+
+
 
     // =========================
     // GET /pedidos/{id}
@@ -143,4 +164,6 @@ public class PedidoService {
 
         return dto;
     }
+
+
 }
