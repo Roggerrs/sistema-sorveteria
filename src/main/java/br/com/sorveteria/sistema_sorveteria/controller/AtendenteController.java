@@ -6,6 +6,7 @@ import br.com.sorveteria.sistema_sorveteria.domain.entity.Atendente;
 import br.com.sorveteria.sistema_sorveteria.repository.AtendenteRepository;
 import br.com.sorveteria.sistema_sorveteria.service.AtendenteService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,5 +30,12 @@ public class AtendenteController {
     public List<AtendenteResponseDTO> listar() {
         return atendenteService.listar();
     }
+
+    @PutMapping("/{id}/inativar")
+    public ResponseEntity<Void> inativar(@PathVariable Long id) {
+        atendenteService.inativarAtendente(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 

@@ -4,6 +4,7 @@ import br.com.sorveteria.sistema_sorveteria.domain.dto.AtendenteRequestDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.dto.AtendenteResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.Atendente;
 import br.com.sorveteria.sistema_sorveteria.repository.AtendenteRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,6 +43,18 @@ public class AtendenteService {
                         a.getNome()
                 ))
                 .toList();
+
+
     }
+
+    @Transactional
+    public void inativarAtendente(Long id) {
+        Atendente atendente = atendenteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Atendente não encontrado"));
+
+        atendente.setAtivo(false);
+    }
+
+
 }
 

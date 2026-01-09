@@ -6,6 +6,7 @@ import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.Pedido;
 import br.com.sorveteria.sistema_sorveteria.service.PedidoService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,4 +36,12 @@ public class PedidoController {
     public PedidoDetalheResponseDTO buscarPorId(@PathVariable Long id) {
         return pedidoService.buscarPorId(id);
     }
+
+    @PutMapping("/{id}/inativar")
+    public ResponseEntity<Void> inativar(@PathVariable Long id) {
+        pedidoService.inativarPedido(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

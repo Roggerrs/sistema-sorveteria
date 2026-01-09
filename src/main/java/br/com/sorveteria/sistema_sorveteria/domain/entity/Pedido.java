@@ -20,6 +20,10 @@ public class Pedido {
     @JoinColumn(name = "ATENDENTE_ID_ATENDENTE", nullable = false)
     private Atendente atendente;
 
+    @Column(name = "ATIVO")
+    private Boolean ativo = true;
+
+
     // 🔴 ISSO FALTAVA
     @OneToMany(mappedBy = "pedido")
     private List<Sorvete> sorvetes;
@@ -48,4 +52,14 @@ public class Pedido {
     public List<Sorvete> getSorvetes() {
         return sorvetes;
     }
+// soft delete
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+
+
 }

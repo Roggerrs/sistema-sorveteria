@@ -30,6 +30,10 @@ public class Sorvete {
     )
     private List<Sabor> sabores;
 
+    @Column(name = "ATIVO")
+    private Boolean ativo = true;
+
+
     public Long getId() {
         return id;
     }
@@ -60,6 +64,14 @@ public class Sorvete {
         this.sabores = sabores;
     }
 
-
-
+    public Boolean getAtivo() {
+        return ativo;
     }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+
+
+
+}

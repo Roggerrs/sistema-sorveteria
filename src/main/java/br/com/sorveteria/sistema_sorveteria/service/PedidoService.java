@@ -33,6 +33,17 @@ public class PedidoService {
         this.sorveteRepository = sorveteRepository;
     }
 
+    @Transactional
+    public void inativarPedido(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+
+        pedido.setAtivo(false);
+    }
+
+
+
+
     // =========================
     // POST /pedidos
     // =========================

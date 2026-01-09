@@ -15,7 +15,11 @@ public class Atendente {
     @Column(name = "NOME", nullable = false)
     private String nome;
 
-public Long getId() {
+    @Column(name = "ATIVO")
+    private Boolean ativo = true;
+
+
+    public Long getId() {
     return id;
 }
 
@@ -30,5 +34,14 @@ public String getNome() {
 public void setNome(String nome) {
     this.nome = nome;
 }
+
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+
 
 }
