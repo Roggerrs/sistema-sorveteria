@@ -1,7 +1,11 @@
 package br.com.sorveteria.sistema_sorveteria.controller;
 
+import br.com.sorveteria.sistema_sorveteria.domain.dto.AtendenteRequestDTO;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.AtendenteResponseDTO;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.Atendente;
 import br.com.sorveteria.sistema_sorveteria.repository.AtendenteRepository;
+import br.com.sorveteria.sistema_sorveteria.service.AtendenteService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,21 +14,20 @@ import java.util.List;
 @RequestMapping("/atendentes")
 public class AtendenteController {
 
-    private final AtendenteRepository atendenteRepository;
+    private final AtendenteService atendenteService;
 
-    public AtendenteController(AtendenteRepository atendenteRepository) {
-        this.atendenteRepository = atendenteRepository;
+    public AtendenteController(AtendenteService atendenteService) {
+        this.atendenteService = atendenteService;
     }
 
-    // GET /atendentes
-    @GetMapping
-    public List<Atendente> listar() {
-        return atendenteRepository.findAll();
-    }
-
-    // POST /atendentes
     @PostMapping
-    public Atendente criar(@RequestBody Atendente atendente) {
-        return atendenteRepository.save(atendente);
+    public AtendenteResponseDTO criar(@RequestBody @Valid AtendenteRequestDTO dto) {
+        return atendenteService.criar(dto);
+    }
+
+    @GetMapping
+    public List<AtendenteResponseDTO> listar() {
+        return atendenteService.listar();
     }
 }
+

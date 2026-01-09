@@ -6,7 +6,7 @@ import java.util.List;
 public class SorveteDetalheDTO {
 
     private String tamanho;
-    private BigDecimal precoBase;
+    private BigDecimal precoTamanho;
     private List<String> sabores;
     private BigDecimal precoSabores;
     private BigDecimal precoTotal;
@@ -19,12 +19,12 @@ public class SorveteDetalheDTO {
         this.tamanho = tamanho;
     }
 
-    public BigDecimal getPrecoBase() {
-        return precoBase;
+    public BigDecimal getPrecoTamanho() {
+        return precoTamanho;
     }
 
-    public void setPrecoBase(BigDecimal precoBase) {
-        this.precoBase = precoBase;
+    public void setPrecoTamanho(BigDecimal precoTamanho) {
+        this.precoTamanho = precoTamanho;
     }
 
     public List<String> getSabores() {

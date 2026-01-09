@@ -99,10 +99,12 @@ public class PedidoService {
         dto.setAtendente(pedido.getAtendente().getNome());
         dto.setDataPedido(pedido.getDataPedido());
 
+        BigDecimal totalPedido = BigDecimal.ZERO;
+
         List<SorveteDetalheDTO> sorvetesDTO =
                 pedido.getSorvetes().stream().map(s -> {
 
-                    BigDecimal precoBase = s.getTamanho().getPrecoBase();
+                    BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
 
                     BigDecimal precoSabores = s.getSabores().stream()
                             .map(sb -> sb.getPrecoAdicional() != null
@@ -111,15 +113,17 @@ public class PedidoService {
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                     SorveteDetalheDTO sd = new SorveteDetalheDTO();
+                    // tamanho
                     sd.setTamanho(s.getTamanho().getDescricao());
-                    sd.setPrecoBase(precoBase);
+                    precoTamanho = s.getTamanho().getPrecoTamanho();
+                    sd.setPrecoTamanho(precoTamanho);
                     sd.setSabores(
                             s.getSabores().stream()
                                     .map(Sabor::getNome)
                                     .toList()
                     );
                     sd.setPrecoSabores(precoSabores);
-                    sd.setPrecoTotal(precoBase.add(precoSabores));
+                    sd.setPrecoTotal(precoTamanho.add(precoSabores));
 
                     return sd;
                 }).toList();

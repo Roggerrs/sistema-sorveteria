@@ -21,9 +21,10 @@ public class PedidoController {
     }
 
     @PostMapping
-    public PedidoResponseDTO criar(@Valid @RequestBody PedidoRequestDTO dto) {
+    public PedidoResponseDTO criar(@RequestBody @Valid PedidoRequestDTO dto) {
         return pedidoService.criarPedido(dto);
     }
+
 
     @GetMapping
     public List<PedidoResponseDTO> listar() {

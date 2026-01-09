@@ -1,5 +1,6 @@
 package br.com.sorveteria.sistema_sorveteria.domain.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -9,6 +10,7 @@ public class PedidoDetalheResponseDTO {
     private String atendente;
     private LocalDateTime dataPedido;
     private List<SorveteDetalheDTO> sorvetes;
+    private BigDecimal totalPedido;
 
     public Long getId() {
         return id;
@@ -41,4 +43,15 @@ public class PedidoDetalheResponseDTO {
     public void setSorvetes(List<SorveteDetalheDTO> sorvetes) {
         this.sorvetes = sorvetes;
     }
+
+    public BigDecimal getTotalPedido() {
+        return totalPedido;
+    }
+
+    public void setTotalPedido(BigDecimal totalPedido) {
+        this.totalPedido = totalPedido;
+    }
+
+
+
 }

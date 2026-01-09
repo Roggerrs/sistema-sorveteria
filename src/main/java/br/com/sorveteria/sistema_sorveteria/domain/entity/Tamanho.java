@@ -15,8 +15,8 @@ public class Tamanho {
     @Column(name = "DESCRICAO", nullable = false)
     private String descricao;
 
-    @Column(name = "PRECO_BASE", nullable = false)
-    private BigDecimal precoBase;
+    @Column(name = "PRECO_TAMANHO", nullable = false)
+    private BigDecimal precoTamanho;
 
     public Long getId() {
         return id;
@@ -31,11 +31,13 @@ public class Tamanho {
         this.descricao = descricao;
     }
 
-    public BigDecimal getPrecoBase() {
-        return precoBase;
+    public BigDecimal getPrecoTamanho() {
+        return precoTamanho;
     }
 
-    public void setPrecoBase(BigDecimal precoBase) {
-        this.precoBase = precoBase;
+    public void setPrecoTamanho(BigDecimal precoTamanho) {
+        this.precoTamanho = precoTamanho;
     }
+
+
 }
