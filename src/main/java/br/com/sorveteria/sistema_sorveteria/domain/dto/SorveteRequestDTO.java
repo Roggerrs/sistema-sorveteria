@@ -10,7 +10,7 @@ public class SorveteRequestDTO {
     private Long tamanhoId;
 
     @NotEmpty
-    private List<Long> saboresIds;
+    private List<Long> sabores; // ✅ alinhado com o FRONT
 
     public Long getTamanhoId() {
         return tamanhoId;
@@ -20,11 +20,11 @@ public class SorveteRequestDTO {
         this.tamanhoId = tamanhoId;
     }
 
-    public List<Long> getSaboresIds() {
-        return saboresIds;
+    public List<Long> getSabores() {
+        return sabores;
     }
 
-    public void setSaboresIds(List<Long> saboresIds) {
-        this.saboresIds = saboresIds;
+    public void setSabores(List<Long> sabores) {
+        this.sabores = sabores;
     }
 }

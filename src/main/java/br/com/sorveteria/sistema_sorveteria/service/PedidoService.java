@@ -35,19 +35,6 @@ public class PedidoService {
         this.sorveteRepository = sorveteRepository;
     }
 
-
-
-    @Transactional
-    public void inativarPedido(Long id) {
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
-
-        pedido.setAtivo(false);
-    }
-
-
-
-
     // =========================
     // POST /pedidos
     // =========================
@@ -57,20 +44,24 @@ public class PedidoService {
         Atendente atendente = atendenteRepository.findById(dto.getAtendenteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Atendente não encontrado"));
 
-
         Pedido pedido = new Pedido();
         pedido.setAtendente(atendente);
         pedido.setDataPedido(LocalDateTime.now());
 
         pedido = pedidoRepository.save(pedido);
 
+        BigDecimal totalPedido = BigDecimal.ZERO;
+
         for (SorveteRequestDTO s : dto.getSorvetes()) {
 
             Tamanho tamanho = tamanhoRepository.findById(s.getTamanhoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Tamanho inválido"));
 
+            List<Sabor> sabores = saborRepository.findAllById(s.getSabores());
 
-            List<Sabor> sabores = saborRepository.findAllById(s.getSaboresIds());
+            if (sabores.isEmpty()) {
+                throw new BusinessException("Sabores inválidos");
+            }
 
             int qtdSabores = sabores.size();
 
@@ -82,24 +73,27 @@ public class PedidoService {
                 throw new BusinessException("Sorvete grande permite no máximo 3 sabores");
             }
 
-
-
-            if (sabores.isEmpty()) {
-                throw new BusinessException("Sabores inválidos");
-
-            }
-
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
             sorvete.setSabores(sabores);
 
             sorveteRepository.save(sorvete);
+
+            BigDecimal precoTamanho = tamanho.getPrecoTamanho();
+            BigDecimal precoSabores = sabores.stream()
+                    .map(sb -> sb.getPrecoAdicional() != null
+                            ? sb.getPrecoAdicional()
+                            : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            totalPedido = totalPedido.add(precoTamanho.add(precoSabores));
         }
 
         return new PedidoResponseDTO(
                 pedido.getId(),
-                atendente.getNome()
+                atendente.getNome(),
+                totalPedido
         );
     }
 
@@ -111,12 +105,11 @@ public class PedidoService {
                 .stream()
                 .map(p -> new PedidoResponseDTO(
                         p.getId(),
-                        p.getAtendente().getNome()
+                        p.getAtendente().getNome(),
+                        BigDecimal.ZERO // total resumido (detalhe calcula depois)
                 ))
                 .toList();
     }
-
-
 
     // =========================
     // GET /pedidos/{id}
@@ -124,7 +117,7 @@ public class PedidoService {
     public PedidoDetalheResponseDTO buscarPorId(Long id) {
 
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
         PedidoDetalheResponseDTO dto = new PedidoDetalheResponseDTO();
         dto.setId(pedido.getId());
@@ -133,37 +126,49 @@ public class PedidoService {
 
         BigDecimal totalPedido = BigDecimal.ZERO;
 
-        List<SorveteDetalheDTO> sorvetesDTO =
-                pedido.getSorvetes().stream().map(s -> {
+        List<SorveteDetalheDTO> sorvetesDTO = pedido.getSorvetes().stream().map(s -> {
 
-                    BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
+            BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
+            BigDecimal precoSabores = s.getSabores().stream()
+                    .map(sb -> sb.getPrecoAdicional() != null
+                            ? sb.getPrecoAdicional()
+                            : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    BigDecimal precoSabores = s.getSabores().stream()
-                            .map(sb -> sb.getPrecoAdicional() != null
-                                    ? sb.getPrecoAdicional()
-                                    : BigDecimal.ZERO)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalSorvete = precoTamanho.add(precoSabores);
 
-                    SorveteDetalheDTO sd = new SorveteDetalheDTO();
-                    // tamanho
-                    sd.setTamanho(s.getTamanho().getDescricao());
-                    precoTamanho = s.getTamanho().getPrecoTamanho();
-                    sd.setPrecoTamanho(precoTamanho);
-                    sd.setSabores(
-                            s.getSabores().stream()
-                                    .map(Sabor::getNome)
-                                    .toList()
-                    );
-                    sd.setPrecoSabores(precoSabores);
-                    sd.setPrecoTotal(precoTamanho.add(precoSabores));
+            SorveteDetalheDTO sd = new SorveteDetalheDTO();
+            sd.setTamanho(s.getTamanho().getDescricao());
+            sd.setPrecoTamanho(precoTamanho);
+            sd.setSabores(
+                    s.getSabores().stream()
+                            .map(Sabor::getNome)
+                            .toList()
+            );
+            sd.setPrecoSabores(precoSabores);
+            sd.setPrecoTotal(totalSorvete);
 
-                    return sd;
-                }).toList();
+            return sd;
+        }).toList();
+
+        for (SorveteDetalheDTO sd : sorvetesDTO) {
+            totalPedido = totalPedido.add(sd.getPrecoTotal());
+        }
 
         dto.setSorvetes(sorvetesDTO);
+        dto.setTotal(totalPedido);
 
         return dto;
     }
 
+    // =========================
+    // PUT /pedidos/{id}/inativar
+    // =========================
+    @Transactional
+    public void inativarPedido(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
+        pedido.setAtivo(false);
+    }
 }

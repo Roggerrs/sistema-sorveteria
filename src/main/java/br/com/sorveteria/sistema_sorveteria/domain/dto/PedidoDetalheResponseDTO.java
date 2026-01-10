@@ -10,7 +10,7 @@ public class PedidoDetalheResponseDTO {
     private String atendente;
     private LocalDateTime dataPedido;
     private List<SorveteDetalheDTO> sorvetes;
-    private BigDecimal totalPedido;
+    private BigDecimal total;
 
     public Long getId() {
         return id;
@@ -44,14 +44,11 @@ public class PedidoDetalheResponseDTO {
         this.sorvetes = sorvetes;
     }
 
-    public BigDecimal getTotalPedido() {
-        return totalPedido;
+    public BigDecimal getTotal() {
+        return total;
     }
 
-    public void setTotalPedido(BigDecimal totalPedido) {
-        this.totalPedido = totalPedido;
+    public void setTotal(BigDecimal total) {
+        this.total = total;
     }
-
-
-
 }
