@@ -5,12 +5,12 @@ import java.math.BigDecimal;
 public class PedidoResponseDTO {
 
     private Long id;
-    private String atendente;
+    private String nomeAtendente;
     private BigDecimal valorTotal;
 
-    public PedidoResponseDTO(Long id, String atendente, BigDecimal valorTotal) {
+    public PedidoResponseDTO(Long id, String nomeAtendente, BigDecimal valorTotal) {
         this.id = id;
-        this.atendente = atendente;
+        this.nomeAtendente = nomeAtendente;
         this.valorTotal = valorTotal;
     }
 
@@ -18,8 +18,8 @@ public class PedidoResponseDTO {
         return id;
     }
 
-    public String getAtendente() {
-        return atendente;
+    public String getNomeAtendente() {
+        return nomeAtendente;
     }
 
     public BigDecimal getValorTotal() {

@@ -10,7 +10,7 @@ public class SorveteRequestDTO {
     private Long tamanhoId;
 
     @NotEmpty
-    private List<Long> sabores; // ✅ alinhado com o FRONT
+    private List<Long> sabores;
 
     public Long getTamanhoId() {
         return tamanhoId;

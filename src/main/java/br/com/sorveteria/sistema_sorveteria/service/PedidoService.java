@@ -77,7 +77,6 @@ public class PedidoService {
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
             sorvete.setSabores(sabores);
-
             sorveteRepository.save(sorvete);
 
             BigDecimal precoTamanho = tamanho.getPrecoTamanho();
@@ -106,7 +105,7 @@ public class PedidoService {
                 .map(p -> new PedidoResponseDTO(
                         p.getId(),
                         p.getAtendente().getNome(),
-                        BigDecimal.ZERO // total resumido (detalhe calcula depois)
+                        BigDecimal.ZERO
                 ))
                 .toList();
     }
@@ -140,11 +139,7 @@ public class PedidoService {
             SorveteDetalheDTO sd = new SorveteDetalheDTO();
             sd.setTamanho(s.getTamanho().getDescricao());
             sd.setPrecoTamanho(precoTamanho);
-            sd.setSabores(
-                    s.getSabores().stream()
-                            .map(Sabor::getNome)
-                            .toList()
-            );
+            sd.setSabores(s.getSabores().stream().map(Sabor::getNome).toList());
             sd.setPrecoSabores(precoSabores);
             sd.setPrecoTotal(totalSorvete);
 
@@ -168,7 +163,6 @@ public class PedidoService {
     public void inativarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-
         pedido.setAtivo(false);
     }
 }
