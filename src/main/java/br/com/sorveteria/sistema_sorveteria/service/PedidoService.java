@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,6 +48,7 @@ public class PedidoService {
         Pedido pedido = new Pedido();
         pedido.setAtendente(atendente);
         pedido.setDataPedido(LocalDateTime.now());
+        pedido.setAtivo(true);
 
         pedido = pedidoRepository.save(pedido);
 
@@ -77,6 +79,7 @@ public class PedidoService {
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
             sorvete.setSabores(sabores);
+
             sorveteRepository.save(sorvete);
 
             BigDecimal precoTamanho = tamanho.getPrecoTamanho();
@@ -100,14 +103,25 @@ public class PedidoService {
     // GET /pedidos
     // =========================
     public List<PedidoResponseDTO> listarTodos() {
-        return pedidoRepository.findAll()
-                .stream()
-                .map(p -> new PedidoResponseDTO(
-                        p.getId(),
-                        p.getAtendente().getNome(),
-                        BigDecimal.ZERO
-                ))
-                .toList();
+
+        return pedidoRepository.findAll().stream().map(p -> {
+
+            BigDecimal total = p.getSorvetes().stream().map(s -> {
+                BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
+                BigDecimal precoSabores = s.getSabores().stream()
+                        .map(sb -> sb.getPrecoAdicional() != null
+                                ? sb.getPrecoAdicional()
+                                : BigDecimal.ZERO)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return precoTamanho.add(precoSabores);
+            }).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            return new PedidoResponseDTO(
+                    p.getId(),
+                    p.getAtendente().getNome(),
+                    total
+            );
+        }).toList();
     }
 
     // =========================
@@ -124,8 +138,9 @@ public class PedidoService {
         dto.setDataPedido(pedido.getDataPedido());
 
         BigDecimal totalPedido = BigDecimal.ZERO;
+        List<SorveteDetalheDTO> sorvetesDTO = new ArrayList<>();
 
-        List<SorveteDetalheDTO> sorvetesDTO = pedido.getSorvetes().stream().map(s -> {
+        for (Sorvete s : pedido.getSorvetes()) {
 
             BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
             BigDecimal precoSabores = s.getSabores().stream()
@@ -135,6 +150,7 @@ public class PedidoService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal totalSorvete = precoTamanho.add(precoSabores);
+            totalPedido = totalPedido.add(totalSorvete);
 
             SorveteDetalheDTO sd = new SorveteDetalheDTO();
             sd.setTamanho(s.getTamanho().getDescricao());
@@ -143,11 +159,7 @@ public class PedidoService {
             sd.setPrecoSabores(precoSabores);
             sd.setPrecoTotal(totalSorvete);
 
-            return sd;
-        }).toList();
-
-        for (SorveteDetalheDTO sd : sorvetesDTO) {
-            totalPedido = totalPedido.add(sd.getPrecoTotal());
+            sorvetesDTO.add(sd);
         }
 
         dto.setSorvetes(sorvetesDTO);
