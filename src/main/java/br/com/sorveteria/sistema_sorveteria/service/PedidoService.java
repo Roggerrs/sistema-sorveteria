@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,27 +20,21 @@ public class PedidoService {
     private final TamanhoRepository tamanhoRepository;
     private final SaborRepository saborRepository;
     private final SorveteRepository sorveteRepository;
-    private final SorveteHasSaborRepository sorveteHasSaborRepository;
 
     public PedidoService(
             PedidoRepository pedidoRepository,
             AtendenteRepository atendenteRepository,
             TamanhoRepository tamanhoRepository,
             SaborRepository saborRepository,
-            SorveteRepository sorveteRepository,
-            SorveteHasSaborRepository sorveteHasSaborRepository
+            SorveteRepository sorveteRepository
     ) {
         this.pedidoRepository = pedidoRepository;
         this.atendenteRepository = atendenteRepository;
         this.tamanhoRepository = tamanhoRepository;
         this.saborRepository = saborRepository;
         this.sorveteRepository = sorveteRepository;
-        this.sorveteHasSaborRepository = sorveteHasSaborRepository;
     }
 
-    // =========================
-    // POST /pedidos
-    // =========================
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
 
@@ -62,45 +55,31 @@ public class PedidoService {
             Tamanho tamanho = tamanhoRepository.findById(s.getTamanhoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Tamanho inválido"));
 
-            List<Sabor> sabores = saborRepository.findAllById(s.getSabores());
+            List<Sabor> sabores = saborRepository.findAllById(s.getSaboresIds());
 
             if (sabores.isEmpty()) {
                 throw new BusinessException("Selecione ao menos um sabor");
             }
 
-            int qtdSabores = sabores.size();
-
-            if ("PEQUENO".equalsIgnoreCase(tamanho.getDescricao()) && qtdSabores > 2) {
-                throw new BusinessException("Sorvete pequeno permite no máximo 2 sabores");
+            if ("PEQUENO".equalsIgnoreCase(tamanho.getDescricao()) && sabores.size() > 2) {
+                throw new BusinessException("Pequeno permite até 2 sabores");
             }
 
-            if ("GRANDE".equalsIgnoreCase(tamanho.getDescricao()) && qtdSabores > 3) {
-                throw new BusinessException("Sorvete grande permite no máximo 3 sabores");
+            if ("GRANDE".equalsIgnoreCase(tamanho.getDescricao()) && sabores.size() > 3) {
+                throw new BusinessException("Grande permite até 3 sabores");
             }
 
-            // cria sorvete
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
+            sorvete.setSabores(sabores);
             sorvete.setAtivo(true);
 
-            sorvete = sorveteRepository.save(sorvete);
-
-            // cria relação sorvete x sabor
-            List<SorveteHasSabor> relacoes = new ArrayList<>();
-
-            for (Sabor sabor : sabores) {
-                SorveteHasSabor shs = new SorveteHasSabor();
-                shs.setSorvete(sorvete);
-                shs.setSabor(sabor);
-                relacoes.add(sorveteHasSaborRepository.save(shs));
-            }
-
-            sorvete.setSabores(relacoes);
+            sorveteRepository.save(sorvete);
 
             BigDecimal precoTamanho = tamanho.getPrecoTamanho();
             BigDecimal precoSabores = sabores.stream()
-                    .map(sb -> sb.getPrecoAdicional() != null ? sb.getPrecoAdicional() : BigDecimal.ZERO)
+                    .map(sb -> sb.getPrecoAdicional() == null ? BigDecimal.ZERO : sb.getPrecoAdicional())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             totalPedido = totalPedido.add(precoTamanho.add(precoSabores));
@@ -113,92 +92,59 @@ public class PedidoService {
         );
     }
 
-    // =========================
-    // GET /pedidos
-    // =========================
     public List<PedidoResponseDTO> listarTodos() {
+        return pedidoRepository.findAll().stream().map(p -> {
 
-        return pedidoRepository.findAll().stream().map(pedido -> {
-
-            BigDecimal total = pedido.getSorvetes().stream().map(s -> {
-
-                BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
-
-                BigDecimal precoSabores = s.getSabores().stream()
-                        .map(rel -> {
-                            BigDecimal adicional = rel.getSabor().getPrecoAdicional();
-                            return adicional != null ? adicional : BigDecimal.ZERO;
-                        })
+            BigDecimal total = p.getSorvetes().stream().map(s -> {
+                BigDecimal t = s.getTamanho().getPrecoTamanho();
+                BigDecimal sab = s.getSabores().stream()
+                        .map(x -> x.getPrecoAdicional() == null ? BigDecimal.ZERO : x.getPrecoAdicional())
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                return precoTamanho.add(precoSabores);
-
+                return t.add(sab);
             }).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            return new PedidoResponseDTO(
-                    pedido.getId(),
-                    pedido.getAtendente().getNome(),
-                    total
-            );
+            return new PedidoResponseDTO(p.getId(), p.getAtendente().getNome(), total);
         }).toList();
     }
 
-    // =========================
-    // GET /pedidos/{id}
-    // =========================
     public PedidoDetalheResponseDTO buscarPorId(Long id) {
 
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
-        PedidoDetalheResponseDTO dto = new PedidoDetalheResponseDTO();
-        dto.setId(pedido.getId());
-        dto.setAtendente(pedido.getAtendente().getNome());
-        dto.setDataPedido(pedido.getDataPedido());
+        BigDecimal total = BigDecimal.ZERO;
 
-        BigDecimal totalPedido = BigDecimal.ZERO;
+        List<SorveteDetalheDTO> sorvetes = pedido.getSorvetes().stream().map(s -> {
 
-        List<SorveteDetalheDTO> sorvetesDTO = pedido.getSorvetes().stream().map(s -> {
-
-            BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
-
-            BigDecimal precoSabores = s.getSabores().stream()
-                    .map(rel -> {
-                        BigDecimal adicional = rel.getSabor().getPrecoAdicional();
-                        return adicional != null ? adicional : BigDecimal.ZERO;
-                    })
+            BigDecimal t = s.getTamanho().getPrecoTamanho();
+            BigDecimal sab = s.getSabores().stream()
+                    .map(x -> x.getPrecoAdicional() == null ? BigDecimal.ZERO : x.getPrecoAdicional())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            BigDecimal totalSorvete = precoTamanho.add(precoSabores);
+            BigDecimal subtotal = t.add(sab);
 
-            SorveteDetalheDTO sd = new SorveteDetalheDTO();
-            sd.setTamanho(s.getTamanho().getDescricao());
-            sd.setPrecoTamanho(precoTamanho);
-            sd.setSabores(
-                    s.getSabores().stream()
-                            .map(rel -> rel.getSabor().getNome())
-                            .toList()
-            );
-            sd.setPrecoSabores(precoSabores);
-            sd.setPrecoTotal(totalSorvete);
+            SorveteDetalheDTO dto = new SorveteDetalheDTO();
+            dto.setTamanho(s.getTamanho().getDescricao());
+            dto.setSabores(s.getSabores().stream().map(Sabor::getNome).toList());
+            dto.setPrecoTotal(subtotal);
 
-            return sd;
-
+            return dto;
         }).toList();
 
-        for (SorveteDetalheDTO sd : sorvetesDTO) {
-            totalPedido = totalPedido.add(sd.getPrecoTotal());
+        for (SorveteDetalheDTO s : sorvetes) {
+            total = total.add(s.getPrecoTotal());
         }
 
-        dto.setSorvetes(sorvetesDTO);
-        dto.setTotal(totalPedido);
+        PedidoDetalheResponseDTO r = new PedidoDetalheResponseDTO();
+        r.setId(pedido.getId());
+        r.setAtendente(pedido.getAtendente().getNome());
+        r.setDataPedido(pedido.getDataPedido());
+        r.setSorvetes(sorvetes);
+        r.setTotal(total);
 
-        return dto;
+        return r;
     }
 
-    // =========================
-    // PUT /pedidos/{id}/inativar
-    // =========================
     @Transactional
     public void inativarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)

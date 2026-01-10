@@ -10,7 +10,7 @@ public class SorveteRequestDTO {
     private Long tamanhoId;
 
     @NotEmpty
-    private List<Long> sabores;
+    private List<Long> saboresIds;
 
     public Long getTamanhoId() {
         return tamanhoId;
@@ -20,11 +20,11 @@ public class SorveteRequestDTO {
         this.tamanhoId = tamanhoId;
     }
 
-    public List<Long> getSabores() {
-        return sabores;
+    public List<Long> getSaboresIds() {
+        return saboresIds;
     }
 
-    public void setSabores(List<Long> sabores) {
-        this.sabores = sabores;
+    public void setSaboresIds(List<Long> saboresIds) {
+        this.saboresIds = saboresIds;
     }
 }

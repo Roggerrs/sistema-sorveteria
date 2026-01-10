@@ -2,6 +2,7 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,9 +25,7 @@ public class Pedido {
     private Boolean ativo = true;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Sorvete> sorvetes;
-
-    // ========= GETTERS / SETTERS =========
+    private List<Sorvete> sorvetes = new ArrayList<>();
 
     public Long getId() {
         return id;

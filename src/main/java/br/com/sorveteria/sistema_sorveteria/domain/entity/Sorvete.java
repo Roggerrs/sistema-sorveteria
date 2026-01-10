@@ -2,6 +2,7 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,13 +23,16 @@ public class Sorvete {
     @JoinColumn(name = "TAMANHO_ID_TAMANHO", nullable = false)
     private Tamanho tamanho;
 
-    @OneToMany(mappedBy = "sorvete", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SorveteHasSabor> sabores;
+    @ManyToMany
+    @JoinTable(
+            name = "SORVETE_HAS_SABOR",
+            joinColumns = @JoinColumn(name = "SORVETE_ID_SORVETE"),
+            inverseJoinColumns = @JoinColumn(name = "SABOR_ID_SABOR")
+    )
+    private List<Sabor> sabores = new ArrayList<>();
 
     @Column(name = "ATIVO")
     private Boolean ativo = true;
-
-    // ========= GETTERS / SETTERS =========
 
     public Long getId() {
         return id;
@@ -50,11 +54,11 @@ public class Sorvete {
         this.tamanho = tamanho;
     }
 
-    public List<SorveteHasSabor> getSabores() {
+    public List<Sabor> getSabores() {
         return sabores;
     }
 
-    public void setSabores(List<SorveteHasSabor> sabores) {
+    public void setSabores(List<Sabor> sabores) {
         this.sabores = sabores;
     }
 
