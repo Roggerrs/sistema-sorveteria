@@ -2,7 +2,6 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
 import java.util.List;
 
 @Entity
@@ -14,7 +13,6 @@ public class Sorvete {
     @Column(name = "ID_SORVETE")
     private Long id;
 
-    // 🔴 EVITA LOOP DE SERIALIZAÇÃO (Swagger / JSON)
     @ManyToOne
     @JoinColumn(name = "PEDIDO_ID_PEDIDO", nullable = false)
     @JsonIgnore
@@ -24,20 +22,13 @@ public class Sorvete {
     @JoinColumn(name = "TAMANHO_ID_TAMANHO", nullable = false)
     private Tamanho tamanho;
 
-    @ManyToMany
-    @JoinTable(
-            name = "SORVETE_has_SABOR",
-            joinColumns = @JoinColumn(name = "SORVETE_ID_SORVETE"),
-            inverseJoinColumns = @JoinColumn(name = "SABOR_ID_SABOR")
-    )
-    private List<Sabor> sabores;
+    @OneToMany(mappedBy = "sorvete", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SorveteHasSabor> sabores;
 
     @Column(name = "ATIVO")
     private Boolean ativo = true;
 
-    // ======================
-    // GETTERS E SETTERS
-    // ======================
+    // ========= GETTERS / SETTERS =========
 
     public Long getId() {
         return id;
@@ -59,11 +50,11 @@ public class Sorvete {
         this.tamanho = tamanho;
     }
 
-    public List<Sabor> getSabores() {
+    public List<SorveteHasSabor> getSabores() {
         return sabores;
     }
 
-    public void setSabores(List<Sabor> sabores) {
+    public void setSabores(List<SorveteHasSabor> sabores) {
         this.sabores = sabores;
     }
 

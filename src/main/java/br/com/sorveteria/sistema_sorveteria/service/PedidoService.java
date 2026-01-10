@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,19 +21,22 @@ public class PedidoService {
     private final TamanhoRepository tamanhoRepository;
     private final SaborRepository saborRepository;
     private final SorveteRepository sorveteRepository;
+    private final SorveteHasSaborRepository sorveteHasSaborRepository;
 
     public PedidoService(
             PedidoRepository pedidoRepository,
             AtendenteRepository atendenteRepository,
             TamanhoRepository tamanhoRepository,
             SaborRepository saborRepository,
-            SorveteRepository sorveteRepository
+            SorveteRepository sorveteRepository,
+            SorveteHasSaborRepository sorveteHasSaborRepository
     ) {
         this.pedidoRepository = pedidoRepository;
         this.atendenteRepository = atendenteRepository;
         this.tamanhoRepository = tamanhoRepository;
         this.saborRepository = saborRepository;
         this.sorveteRepository = sorveteRepository;
+        this.sorveteHasSaborRepository = sorveteHasSaborRepository;
     }
 
     // =========================
@@ -74,15 +78,29 @@ public class PedidoService {
                 throw new BusinessException("Sorvete grande permite no máximo 3 sabores");
             }
 
+            // cria sorvete
             Sorvete sorvete = new Sorvete();
             sorvete.setPedido(pedido);
             sorvete.setTamanho(tamanho);
-            sorvete.setSabores(sabores);
-            sorveteRepository.save(sorvete);
+            sorvete.setAtivo(true);
+
+            sorvete = sorveteRepository.save(sorvete);
+
+            // cria relação sorvete x sabor
+            List<SorveteHasSabor> relacoes = new ArrayList<>();
+
+            for (Sabor sabor : sabores) {
+                SorveteHasSabor shs = new SorveteHasSabor();
+                shs.setSorvete(sorvete);
+                shs.setSabor(sabor);
+                relacoes.add(sorveteHasSaborRepository.save(shs));
+            }
+
+            sorvete.setSabores(relacoes);
 
             BigDecimal precoTamanho = tamanho.getPrecoTamanho();
             BigDecimal precoSabores = sabores.stream()
-                    .map(sab -> sab.getPrecoAdicional() != null ? sab.getPrecoAdicional() : BigDecimal.ZERO)
+                    .map(sb -> sb.getPrecoAdicional() != null ? sb.getPrecoAdicional() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             totalPedido = totalPedido.add(precoTamanho.add(precoSabores));
@@ -103,11 +121,18 @@ public class PedidoService {
         return pedidoRepository.findAll().stream().map(pedido -> {
 
             BigDecimal total = pedido.getSorvetes().stream().map(s -> {
+
                 BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
+
                 BigDecimal precoSabores = s.getSabores().stream()
-                        .map(sb -> sb.getPrecoAdicional() != null ? sb.getPrecoAdicional() : BigDecimal.ZERO)
+                        .map(rel -> {
+                            BigDecimal adicional = rel.getSabor().getPrecoAdicional();
+                            return adicional != null ? adicional : BigDecimal.ZERO;
+                        })
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
+
                 return precoTamanho.add(precoSabores);
+
             }).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             return new PedidoResponseDTO(
@@ -136,8 +161,12 @@ public class PedidoService {
         List<SorveteDetalheDTO> sorvetesDTO = pedido.getSorvetes().stream().map(s -> {
 
             BigDecimal precoTamanho = s.getTamanho().getPrecoTamanho();
+
             BigDecimal precoSabores = s.getSabores().stream()
-                    .map(sb -> sb.getPrecoAdicional() != null ? sb.getPrecoAdicional() : BigDecimal.ZERO)
+                    .map(rel -> {
+                        BigDecimal adicional = rel.getSabor().getPrecoAdicional();
+                        return adicional != null ? adicional : BigDecimal.ZERO;
+                    })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal totalSorvete = precoTamanho.add(precoSabores);
@@ -145,11 +174,16 @@ public class PedidoService {
             SorveteDetalheDTO sd = new SorveteDetalheDTO();
             sd.setTamanho(s.getTamanho().getDescricao());
             sd.setPrecoTamanho(precoTamanho);
-            sd.setSabores(s.getSabores().stream().map(Sabor::getNome).toList());
+            sd.setSabores(
+                    s.getSabores().stream()
+                            .map(rel -> rel.getSabor().getNome())
+                            .toList()
+            );
             sd.setPrecoSabores(precoSabores);
             sd.setPrecoTotal(totalSorvete);
 
             return sd;
+
         }).toList();
 
         for (SorveteDetalheDTO sd : sorvetesDTO) {

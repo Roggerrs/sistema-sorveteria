@@ -23,10 +23,10 @@ public class Pedido {
     @Column(name = "ATIVO")
     private Boolean ativo = true;
 
-
-    // 🔴 ISSO FALTAVA
-    @OneToMany(mappedBy = "pedido")
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sorvete> sorvetes;
+
+    // ========= GETTERS / SETTERS =========
 
     public Long getId() {
         return id;
@@ -48,11 +48,6 @@ public class Pedido {
         this.atendente = atendente;
     }
 
-    // 🔴 GETTER OBRIGATÓRIO
-    public List<Sorvete> getSorvetes() {
-        return sorvetes;
-    }
-// soft delete
     public Boolean getAtivo() {
         return ativo;
     }
@@ -61,5 +56,7 @@ public class Pedido {
         this.ativo = ativo;
     }
 
-
+    public List<Sorvete> getSorvetes() {
+        return sorvetes;
+    }
 }
