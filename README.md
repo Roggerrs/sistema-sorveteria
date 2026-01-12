@@ -93,6 +93,7 @@ Os relatórios são gerados via **queries SQL nativas** utilizando **projections
 - Banco: **H2**
 - Console disponível em:
 
+
 ```
 
 [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
@@ -103,6 +104,18 @@ Configuração padrão:
 - JDBC URL: `jdbc:h2:mem:testdb`
 - Usuário: `sa`
 - Senha: (vazia)
+
+---
+
+# 🔥 **MODELO VISUAL (ER SIMPLIFICADO)**
+
+```
+CLIENTE (1) ----< (N) PEDIDO (1) ----< (N) SORVETE >---- (1) TAMANHO
+                                   |
+                                   V
+                             (N) SORVETE_has_SABOR >---- (1) SABOR
+```
+
 
 ---
 
