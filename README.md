@@ -110,7 +110,7 @@ Configuração padrão:
 # 🔥 **MODELO VISUAL (ER SIMPLIFICADO)**
 
 ```
-CLIENTE (1) ----< (N) PEDIDO (1) ----< (N) SORVETE >---- (1) TAMANHO
+ATENDENTE (1) ----< (N) PEDIDO (1) ----< (N) SORVETE >---- (1) TAMANHO
                                    |
                                    V
                              (N) SORVETE_has_SABOR >---- (1) SABOR
