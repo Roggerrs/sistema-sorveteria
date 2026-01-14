@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:*",
-                        "https://sorveteria-frontend.vercel.app"
+                        "https://sorveteria-frontend-chi.vercel.app"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")
