@@ -17,13 +17,21 @@ public class RelatorioService {
 
     public TotalFaturadoDTO totalFaturado() {
         var p = repository.totalFaturado();
+
+        if (p == null || p.getTotal() == null) {
+            return new TotalFaturadoDTO(0.0);
+        }
+
         return new TotalFaturadoDTO(p.getTotal());
     }
 
     public List<TotalPorAtendenteDTO> totalPorAtendente() {
         return repository.totalPorAtendente()
                 .stream()
-                .map(p -> new TotalPorAtendenteDTO(p.getAtendente(), p.getTotal()))
+                .map(p -> new TotalPorAtendenteDTO(
+                        p.getAtendente(),
+                        p.getTotal() == null ? 0.0 : p.getTotal()
+                ))
                 .toList();
     }
 
