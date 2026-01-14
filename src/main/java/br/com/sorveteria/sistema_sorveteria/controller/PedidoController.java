@@ -1,8 +1,6 @@
 package br.com.sorveteria.sistema_sorveteria.controller;
 
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoDetalheResponseDTO;
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoRequestDTO;
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoResponseDTO;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.*;
 import br.com.sorveteria.sistema_sorveteria.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,25 +19,23 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    // POST /pedidos
     @PostMapping
-    public PedidoResponseDTO criar(@RequestBody @Valid PedidoRequestDTO dto) {
-        return pedidoService.criarPedido(dto);
+    public ResponseEntity<PedidoResponseDTO> criar(
+            @RequestBody @Valid PedidoRequestDTO dto
+    ) {
+        return ResponseEntity.ok(pedidoService.criarPedido(dto));
     }
 
-    // GET /pedidos
     @GetMapping
     public List<PedidoResponseDTO> listar() {
         return pedidoService.listarTodos();
     }
 
-    // GET /pedidos/{id}
     @GetMapping("/{id}")
     public PedidoDetalheResponseDTO buscarPorId(@PathVariable Long id) {
         return pedidoService.buscarPorId(id);
     }
 
-    // PUT /pedidos/{id}/inativar
     @PutMapping("/{id}/inativar")
     public ResponseEntity<Void> inativar(@PathVariable Long id) {
         pedidoService.inativarPedido(id);

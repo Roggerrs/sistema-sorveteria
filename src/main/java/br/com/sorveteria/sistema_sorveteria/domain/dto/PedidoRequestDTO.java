@@ -6,11 +6,14 @@ import java.util.List;
 
 public class PedidoRequestDTO {
 
-    @NotNull
+    @NotNull(message = "Atendente é obrigatório")
     private Long atendenteId;
 
-    @NotEmpty
+    @NotEmpty(message = "Pedido deve conter pelo menos um sorvete")
     private List<SorveteRequestDTO> sorvetes;
+
+    public PedidoRequestDTO() {
+    }
 
     public Long getAtendenteId() {
         return atendenteId;
