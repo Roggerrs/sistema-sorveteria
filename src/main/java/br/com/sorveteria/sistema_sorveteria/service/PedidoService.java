@@ -1,9 +1,9 @@
 package br.com.sorveteria.sistema_sorveteria.service;
 
-import br.com.sorveteria.sistema_sorveteria.domain.dto.PedidoRequestDTO;
-import br.com.sorveteria.sistema_sorveteria.domain.dto.SorveteRequestDTO;
+import br.com.sorveteria.sistema_sorveteria.domain.dto.*;
 import br.com.sorveteria.sistema_sorveteria.domain.entity.*;
 import br.com.sorveteria.sistema_sorveteria.exception.BusinessException;
+import br.com.sorveteria.sistema_sorveteria.exception.ResourceNotFoundException;
 import br.com.sorveteria.sistema_sorveteria.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +31,11 @@ public class PedidoService {
         this.saborRepository = saborRepository;
     }
 
+    // =========================
+    // CRIAR PEDIDO
+    // =========================
     @Transactional
-    public Pedido criarPedido(PedidoRequestDTO dto) {
+    public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
 
         if (dto.getAtendenteId() == null) {
             throw new BusinessException("Atendente é obrigatório");
@@ -54,14 +57,6 @@ public class PedidoService {
 
         for (SorveteRequestDTO sorveteDTO : dto.getSorvetes()) {
 
-            if (sorveteDTO.getTamanhoId() == null) {
-                throw new BusinessException("Tamanho é obrigatório");
-            }
-
-            if (sorveteDTO.getSaboresIds() == null || sorveteDTO.getSaboresIds().isEmpty()) {
-                throw new BusinessException("Selecione pelo menos um sabor");
-            }
-
             Tamanho tamanho = tamanhoRepository.findById(sorveteDTO.getTamanhoId())
                     .orElseThrow(() -> new BusinessException("Tamanho não encontrado"));
 
@@ -79,6 +74,56 @@ public class PedidoService {
             pedidoSalvo.getSorvetes().add(sorvete);
         }
 
-        return pedidoRepository.save(pedidoSalvo);
+        pedidoRepository.save(pedidoSalvo);
+
+        return new PedidoResponseDTO(
+                pedidoSalvo.getId(),
+                atendente.getNome(),
+                pedidoSalvo.getSorvetes().stream()
+                        .map(s -> s.getTamanho().getPrecoTamanho())
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+        );
+    }
+
+    // =========================
+    // LISTAR PEDIDOS
+    // =========================
+    public List<PedidoResponseDTO> listarTodos() {
+        return pedidoRepository.findByAtivoTrue()
+                .stream()
+                .map(p -> new PedidoResponseDTO(
+                        p.getId(),
+                        p.getAtendente().getNome(),
+                        java.math.BigDecimal.ZERO
+                ))
+                .toList();
+    }
+
+    // =========================
+    // BUSCAR POR ID
+    // =========================
+    public PedidoDetalheResponseDTO buscarPorId(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        PedidoDetalheResponseDTO dto = new PedidoDetalheResponseDTO();
+        dto.setId(pedido.getId());
+        dto.setAtendente(pedido.getAtendente().getNome());
+        dto.setDataPedido(pedido.getDataPedido());
+
+        return dto;
+    }
+
+    // =========================
+    // INATIVAR PEDIDO
+    // =========================
+    @Transactional
+    public void inativarPedido(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        pedido.setAtivo(false);
     }
 }
