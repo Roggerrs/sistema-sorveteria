@@ -2,6 +2,7 @@ package br.com.sorveteria.sistema_sorveteria.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,6 @@ public class Pedido {
     @Column(name = "ATIVO")
     private Boolean ativo = true;
 
-    // ✅ CORREÇÃO CRÍTICA
     @OneToMany(
             mappedBy = "pedido",
             cascade = CascadeType.ALL,
@@ -32,9 +32,10 @@ public class Pedido {
     )
     private List<Sorvete> sorvetes = new ArrayList<>();
 
-    // =========================
-    // GETTERS / SETTERS
-    // =========================
+    // ✅ FUSO CORRETO DEFINIDO UMA ÚNICA VEZ
+    public Pedido() {
+        this.dataPedido = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+    }
 
     public Long getId() {
         return id;
