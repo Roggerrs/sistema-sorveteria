@@ -24,8 +24,17 @@ public class Pedido {
     @Column(name = "ATIVO")
     private Boolean ativo = true;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    // ✅ CORREÇÃO CRÍTICA
+    @OneToMany(
+            mappedBy = "pedido",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Sorvete> sorvetes = new ArrayList<>();
+
+    // =========================
+    // GETTERS / SETTERS
+    // =========================
 
     public Long getId() {
         return id;
