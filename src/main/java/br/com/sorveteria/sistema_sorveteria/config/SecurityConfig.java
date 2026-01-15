@@ -21,10 +21,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // Sem CSRF (API REST)
+                // API REST → sem CSRF
                 .csrf(csrf -> csrf.disable())
 
-                //  Sem sessão
+                // JWT → sem sessão
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -32,21 +32,12 @@ public class SecurityConfig {
                 //  Regras de acesso
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
-                //  NADA de Basic Auth
-                .httpBasic(httpBasic -> httpBasic.disable());
-
-        //  REGISTRA O FILTRO JWT
-        http.addFilterBefore(
-                jwtAuthFilter,
-                UsernamePasswordAuthenticationFilter.class
-        );
+                // Filtro JWT antes do Spring
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
