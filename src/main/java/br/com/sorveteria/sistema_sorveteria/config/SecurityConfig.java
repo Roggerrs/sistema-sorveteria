@@ -27,39 +27,47 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ CORS ATIVO
+                // 🔹 CORS
                 .cors(cors -> {})
 
-                // ✅ API REST → sem CSRF
+                // 🔹 API REST → desabilita CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ JWT → sem sessão
+                // 🔹 JWT → sem sessão
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // ✅ Regras de acesso
+                // 🔹 Regras de acesso
                 .authorizeHttpRequests(auth -> auth
+
                         // LOGIN LIBERADO
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+
+                        // PREFLIGHT (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // SWAGGER
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
 
-                        // RESTO PROTEGIDO
+                        // QUALQUER OUTRA REQUISIÇÃO PRECISA DE JWT
                         .anyRequest().authenticated()
                 )
 
-                // ✅ Filtro JWT
+                // 🔹 FILTRO JWT
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ CONFIGURAÇÃO CORS (OBRIGATÓRIA)
+    // 🔹 CONFIGURAÇÃO CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
@@ -73,7 +81,9 @@ public class SecurityConfig {
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
 
         return source;
