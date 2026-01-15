@@ -18,16 +18,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        // LOGIN SIMPLES (depois você melhora)
-        if (!request.getUsername().equals("admin") ||
-                !request.getPassword().equals("1234")) {
+        if (!"admin".equals(request.getUsername()) ||
+                !"1234".equals(request.getPassword())) {
             return ResponseEntity.status(401).build();
         }
 
         String token = jwtService.gerarToken(request.getUsername());
 
-        return ResponseEntity.ok(
-                Map.of("token", token)
-        );
+        return ResponseEntity.ok(Map.of("token", token));
     }
 }
