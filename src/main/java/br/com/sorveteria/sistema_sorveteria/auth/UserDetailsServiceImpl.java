@@ -18,7 +18,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return User.builder()
                 .username("admin")
-                .password("1234") //  TEXTO PURO
+                //  HASH BCrypt PURO (sem {bcrypt})
+                .password("$2a$12$KdhCpoeLCikcV2i7R6/NVeKd.E7IeDsCREDtA1209daRAZgRFV63.")
                 .roles("USER")
                 .build();
     }
