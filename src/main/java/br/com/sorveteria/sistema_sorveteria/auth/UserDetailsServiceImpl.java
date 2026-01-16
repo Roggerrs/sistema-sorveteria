@@ -18,7 +18,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return User.builder()
                 .username("admin")
-                // hash BCrypt da senha "1234"
+                // ️ ESTE HASH PRECISA SER REALMENTE DA SENHA "1234"
                 .password("$2a$12$KdhCpoeLCikcV2i7R6/NVeKd.E7IeDsCREDtA1209daRAZgRFV63.")
                 .roles("USER")
                 .build();
