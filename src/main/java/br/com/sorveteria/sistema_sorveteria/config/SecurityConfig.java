@@ -29,7 +29,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 FRONT (NÃO QUEBRA)
+                        //  FRONT (NÃO QUEBRA)
                         .requestMatchers(HttpMethod.GET,
                                 "/atendentes",
                                 "/sabores",
@@ -42,7 +42,7 @@ public class SecurityConfig {
                                 "/pedidos"
                         ).permitAll()
 
-                        // 🔒 ADMIN
+                        //  ADMIN
                         .requestMatchers(HttpMethod.POST,
                                 "/atendentes"
                         ).hasRole("ADMIN")

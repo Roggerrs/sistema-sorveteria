@@ -14,7 +14,7 @@ public class SaborController {
 
     private final SaborRepository saborRepository;
 
-    // 🔹 Injeção explícita (remove todos os erros do IntelliJ)
+    //  Injeção explícita (remove todos os erros do IntelliJ)
     public SaborController(@Autowired SaborRepository saborRepository) {
         this.saborRepository = saborRepository;
     }

@@ -32,7 +32,7 @@ public class Pedido {
     )
     private List<Sorvete> sorvetes = new ArrayList<>();
 
-    // ✅ FUSO CORRETO DEFINIDO UMA ÚNICA VEZ
+    //  FUSO CORRETO DEFINIDO UMA ÚNICA VEZ
     public Pedido() {
         this.dataPedido = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
     }

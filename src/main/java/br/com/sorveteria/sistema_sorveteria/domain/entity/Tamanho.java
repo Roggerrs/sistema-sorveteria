@@ -22,7 +22,7 @@ public class Tamanho {
         return id;
     }
 
-    // 🔴 GETTER OBRIGATÓRIO
+    //  GETTER OBRIGATÓRIO
     public String getDescricao() {
         return descricao;
     }
