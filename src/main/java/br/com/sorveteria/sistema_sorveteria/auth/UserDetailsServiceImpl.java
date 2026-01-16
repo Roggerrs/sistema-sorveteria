@@ -18,7 +18,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return User.builder()
                 .username("admin")
-                .password("{bcrypt}$2a$12$KdhCpoeLCikcV2i7R6/NVeKd.E7IeDsCREDtA1209daRAZgRFV63.")
+                .password("1234") //  TEXTO PURO
                 .roles("USER")
                 .build();
     }
