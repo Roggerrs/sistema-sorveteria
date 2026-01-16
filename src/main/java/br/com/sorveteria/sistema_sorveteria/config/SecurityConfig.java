@@ -5,9 +5,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -20,9 +24,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            UserDetailsService userDetailsService
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -32,48 +41,40 @@ public class SecurityConfig {
                 //  CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                //  CSRF (API REST)
+                //  CSRF
                 .csrf(csrf -> csrf.disable())
 
-                //  Desativa auth padrão do Spring
+                //  Auth padrão do Spring
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLogin -> formLogin.disable())
 
-                //  JWT → Stateless
+                //  JWT stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // Regras de acesso
+                //  Regras
                 .authorizeHttpRequests(auth -> auth
-
-                        //  LOGIN (qualquer prefixo)
-                        .requestMatchers(
-                                "/auth/**",
-                                "/api/auth/**"
-                        ).permitAll()
-
-                        //  CORS preflight
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        //  Swagger
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
-                        //  Todo o resto
                         .anyRequest().authenticated()
                 )
 
-                //  Filtro JWT
+                //  AuthenticationProvider EXPLÍCITO
+                .authenticationProvider(authenticationProvider())
+
+                // JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    //  AuthenticationManager (login)
+    //  AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
@@ -81,7 +82,22 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    //  CORS (Local + Vercel)
+    //  PasswordEncoder
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // Provider que liga UserDetailsService + BCrypt
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    //  CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
