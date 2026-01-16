@@ -10,11 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        // USUÁRIO FIXO (para estudo)
         if (!username.equals("admin")) {
             throw new UsernameNotFoundException("Usuário não encontrado");
         }
