@@ -12,13 +12,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
 
-        if (!username.equals("admin")) {
+        if (!"admin".equals(username)) {
             throw new UsernameNotFoundException("Usuário não encontrado");
         }
 
         return User.builder()
                 .username("admin")
-                .password("1234") // senha simples
+                .password("1234")
                 .roles("ADMIN")
                 .build();
     }
