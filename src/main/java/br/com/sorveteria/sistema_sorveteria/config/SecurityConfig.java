@@ -4,6 +4,8 @@ import br.com.sorveteria.sistema_sorveteria.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,50 +29,51 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔹 CORS
-                .cors(cors -> {})
+                // CORS do Spring Security
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 🔹 API REST → desabilita CSRF
+                // API REST
                 .csrf(csrf -> csrf.disable())
 
-                // 🔹 JWT → sem sessão
+                // JWT → sem sessão
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🔹 Regras de acesso
+                // Regras de acesso
                 .authorizeHttpRequests(auth -> auth
-
-                        // LOGIN LIBERADO
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-
-                        // PREFLIGHT (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // SWAGGER
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
-                        // QUALQUER OUTRA REQUISIÇÃO PRECISA DE JWT
                         .anyRequest().authenticated()
                 )
 
-                // 🔹 FILTRO JWT
+                // Filtro JWT
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔹 CONFIGURAÇÃO CORS
+    // 🔐 AuthenticationManager (OBRIGATÓRIO para login)
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    // 🌍 CORS DEFINITIVO (Local + Vercel)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
                 "https://sorveteria-frontend-chi.vercel.app"
         ));
 
