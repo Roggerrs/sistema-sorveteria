@@ -149,6 +149,20 @@ A API possui documentação gerada automaticamente com **Swagger/OpenAPI**, faci
 
 ---
 
+## 🔐 Segurança da API
+
+A API conta com configuração de segurança utilizando **Spring Security**, aplicando controle de acesso aos endpoints.
+
+A documentação da API é gerada com **Swagger/OpenAPI**, integrada ao mecanismo de autorização, permitindo testes controlados durante o desenvolvimento.
+
+Essa abordagem garante:
+- Organização dos endpoints
+- Controle de acesso às operações
+- Separação entre documentação e execução da aplicação
+
+---
+
+
 ## 🔗 Projetos Relacionados
 
 * Frontend React:
