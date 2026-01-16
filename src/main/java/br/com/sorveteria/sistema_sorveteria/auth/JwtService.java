@@ -11,7 +11,7 @@ import java.util.Date;
 public class JwtService {
 
     private static final String SECRET_KEY = "SEGREDO_SUPER_SECRETO_123456";
-    private static final long EXPIRATION = 1000 * 60 * 60 * 4; // 4h
+    private static final long EXPIRATION = 1000 * 60 * 60 * 4; // 4 horas
 
     public String gerarToken(String username) {
         return Jwts.builder()
@@ -22,15 +22,21 @@ public class JwtService {
                 .compact();
     }
 
-    public String getUsername(String token) {
-        return getClaims(token).getSubject();
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
     }
 
     public boolean isTokenValid(String token) {
-        return !getClaims(token).getExpiration().before(new Date());
+        return !isTokenExpired(token);
     }
 
-    private Claims getClaims(String token) {
+    private boolean isTokenExpired(String token) {
+        return extractClaims(token)
+                .getExpiration()
+                .before(new Date());
+    }
+
+    private Claims extractClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)

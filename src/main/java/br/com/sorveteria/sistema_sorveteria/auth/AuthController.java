@@ -25,6 +25,8 @@ public class AuthController {
 
         String token = jwtService.gerarToken(request.getUsername());
 
-        return ResponseEntity.ok(Map.of("token", token));
+        return ResponseEntity.ok(
+                Map.of("token", token)
+        );
     }
 }
