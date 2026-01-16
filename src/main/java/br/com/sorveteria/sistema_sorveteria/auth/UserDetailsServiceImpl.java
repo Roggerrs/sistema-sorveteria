@@ -13,16 +13,16 @@ import org.springframework.stereotype.Service;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) {
 
-        // USUÁRIO FIXO (para estudo)
         if (!username.equals("admin")) {
             throw new UsernameNotFoundException("Usuário não encontrado");
         }
 
         return User.builder()
                 .username("admin")
-                .password(passwordEncoder().encode("1234"))
+                //  HASH FIXO (NÃO gerar de novo)
+                .password("$2a$12$KdhCpoeLCikcV2i7R6/NVeKd.E7IeDsCREDtA1209daRAZgRFV63.")
                 .roles("USER")
                 .build();
     }
