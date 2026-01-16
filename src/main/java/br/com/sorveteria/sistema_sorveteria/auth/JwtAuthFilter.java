@@ -20,21 +20,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthFilter(JwtService jwtService,
-                         UserDetailsService userDetailsService) {
+    public JwtAuthFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService
+    ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
     /**
-     * 🔥 IGNORA ROTAS PÚBLICAS (login, swagger, etc)
+     *  ROTAS PÚBLICAS (login, swagger, CORS)
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+
         String path = request.getRequestURI();
-        return path.equals("/auth/login")
-                || path.startsWith("/swagger-ui")
-                || path.startsWith("/v3/api-docs");
+        String method = request.getMethod();
+
+        // OPTIONS (CORS preflight)
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
+
+        return
+                path.startsWith("/auth") ||
+                        path.startsWith("/swagger-ui") ||
+                        path.startsWith("/v3/api-docs");
     }
 
     @Override
@@ -46,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Se não tem Authorization, segue fluxo normal
+        //  Sem token → segue fluxo
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -55,7 +66,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String jwt = authHeader.substring(7);
         String username = jwtService.extractUsername(jwt);
 
-        // Se já estiver autenticado, não faz nada
         if (username != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
 

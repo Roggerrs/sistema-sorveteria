@@ -29,18 +29,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // CORS do Spring Security
+                //  CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // API REST
+                //  CSRF (API REST)
                 .csrf(csrf -> csrf.disable())
 
-                // JWT → sem sessão
+                //  JWT → sem sessão
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // Regras de acesso
+                //  Regras de acesso
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -52,13 +52,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // Filtro JWT
+                //  Filtro JWT
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔐 AuthenticationManager (OBRIGATÓRIO para login)
+    //  AuthenticationManager (login)
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
@@ -66,7 +66,7 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // 🌍 CORS DEFINITIVO (Local + Vercel)
+    //  CORS (Local + Vercel)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
