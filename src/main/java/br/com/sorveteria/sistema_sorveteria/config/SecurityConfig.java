@@ -38,24 +38,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                //  CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                //  CSRF
                 .csrf(csrf -> csrf.disable())
-
-                //  Auth padrão do Spring
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLogin -> formLogin.disable())
-
-                //  JWT stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                //  Regras
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -64,17 +55,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-
-                //  AuthenticationProvider EXPLÍCITO
                 .authenticationProvider(authenticationProvider())
-
-                // JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    //  AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
@@ -82,13 +68,11 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    //  PasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Provider que liga UserDetailsService + BCrypt
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -97,7 +81,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    //  CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
