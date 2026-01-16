@@ -35,20 +35,35 @@ public class SecurityConfig {
                 //  CSRF (API REST)
                 .csrf(csrf -> csrf.disable())
 
-                //  JWT → sem sessão
+                //  Desativa auth padrão do Spring
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+
+                //  JWT → Stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                //  Regras de acesso
+                // Regras de acesso
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+
+                        //  LOGIN (qualquer prefixo)
+                        .requestMatchers(
+                                "/auth/**",
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        //  CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        //  Swagger
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
+                        //  Todo o resto
                         .anyRequest().authenticated()
                 )
 
