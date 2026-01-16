@@ -29,16 +29,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     /**
-     *  MUITO IMPORTANTE
-     * Ignora COMPLETAMENTE rotas públicas
+     *  IGNORA ROTAS PÚBLICAS
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
+        String path = request.getRequestURI();
 
-        return path.startsWith("/auth/")
+        return path.startsWith("/auth")
                 || path.startsWith("/swagger-ui")
-                || path.startsWith("/v3/api-docs");
+                || path.startsWith("/v3/api-docs")
+                || request.getMethod().equals("OPTIONS");
     }
 
     @Override
@@ -48,26 +48,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 🔒 Se já existe autenticação, segue
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String authHeader = request.getHeader("Authorization");
-
-        // 🔓 Se NÃO tem header Authorization, NÃO bloqueia
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String jwt = authHeader.substring(7);
-
         try {
+            String authHeader = request.getHeader("Authorization");
+
+            //  Sem token → deixa passar
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String jwt = authHeader.substring(7);
             String username = jwtService.extractUsername(jwt);
 
-            if (username != null) {
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails =
                         userDetailsService.loadUserByUsername(username);
@@ -92,12 +86,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
 
-        } catch (Exception e) {
-            //  NUNCA quebrar a request por erro de JWT
-            // Apenas ignora e segue
-            SecurityContextHolder.clearContext();
-        }
+            filterChain.doFilter(request, response);
 
-        filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            //  ISSO EVITA 403 SILENCIOSO
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
     }
 }
