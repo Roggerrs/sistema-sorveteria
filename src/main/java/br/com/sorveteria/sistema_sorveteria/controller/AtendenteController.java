@@ -17,7 +17,8 @@ public class AtendenteController {
 
     private final AtendenteService atendenteService;
 
-    public AtendenteController(AtendenteService atendenteService) {
+    public AtendenteController(AtendenteService atendenteService)
+    {
         this.atendenteService = atendenteService;
     }
 

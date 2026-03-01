@@ -4,3 +4,4 @@ public interface SaboresMaisVendidosProjection {
     String getNome();
     Long getTotal();
 }
+

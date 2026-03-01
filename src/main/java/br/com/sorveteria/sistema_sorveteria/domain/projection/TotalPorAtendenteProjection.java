@@ -4,3 +4,4 @@ public interface TotalPorAtendenteProjection {
     String getAtendente();
     Double getTotal();
 }
+

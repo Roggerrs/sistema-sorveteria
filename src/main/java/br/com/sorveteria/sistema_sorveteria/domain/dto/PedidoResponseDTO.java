@@ -8,7 +8,8 @@ public class PedidoResponseDTO {
     private String nomeAtendente;
     private BigDecimal valorTotal;
 
-    public PedidoResponseDTO(Long id, String nomeAtendente, BigDecimal valorTotal) {
+    public PedidoResponseDTO
+            (Long id, String nomeAtendente, BigDecimal valorTotal) {
         this.id = id;
         this.nomeAtendente = nomeAtendente;
         this.valorTotal = valorTotal;
